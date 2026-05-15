@@ -1,3 +1,160 @@
 from django.db import models
+from django.urls import reverse
 
-# Create your models here.
+
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=ArtPrompt.Status.PUBLISHED)
+
+
+class Category(models.Model):
+    name = models.CharField(
+        max_length=100,
+        db_index=True,
+        verbose_name='Название категории'
+    )
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name='Slug'
+    )
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['name']
+
+    def get_absolute_url(self):
+        return reverse('category', kwargs={'cat_slug': self.slug})
+
+    def __str__(self):
+        return self.name
+
+
+class TagPrompt(models.Model):
+    tag = models.CharField(
+        max_length=100,
+        db_index=True,
+        verbose_name='Тег'
+    )
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name='Slug'
+    )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+        ordering = ['tag']
+
+    def get_absolute_url(self):
+        return reverse('tag', kwargs={'tag_slug': self.slug})
+
+    def __str__(self):
+        return self.tag
+
+
+class PromptMeta(models.Model):
+    difficulty = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Сложность'
+    )
+    estimated_time = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Примерное время выполнения, мин.'
+    )
+    materials = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Материалы'
+    )
+
+    class Meta:
+        verbose_name = 'Дополнительная информация'
+        verbose_name_plural = 'Дополнительная информация'
+
+    def __str__(self):
+        return f'{self.difficulty}, {self.estimated_time} мин.'
+
+
+class ArtPrompt(models.Model):
+    class Status(models.IntegerChoices):
+        DRAFT = 0, 'Черновик'
+        PUBLISHED = 1, 'Опубликовано'
+
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Название'
+    )
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name='Slug'
+    )
+    content = models.TextField(
+        blank=True,
+        verbose_name='Описание'
+    )
+    style = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Стиль'
+    )
+    status = models.IntegerField(
+        choices=Status.choices,
+        default=Status.DRAFT,
+        verbose_name='Статус'
+    )
+    time_create = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Время создания'
+    )
+    time_update = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Время изменения'
+    )
+
+    cat = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='prompts',
+        verbose_name='Категория'
+    )
+
+    tags = models.ManyToManyField(
+        TagPrompt,
+        blank=True,
+        related_name='prompts',
+        verbose_name='Теги'
+    )
+
+    meta = models.OneToOneField(
+        PromptMeta,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='prompt',
+        verbose_name='Дополнительная информация'
+    )
+
+    objects = models.Manager()
+    published = PublishedManager()
+
+    class Meta:
+        verbose_name = 'Арт-промпт'
+        verbose_name_plural = 'Арт-промпты'
+        ordering = ['-time_create']
+
+    def get_absolute_url(self):
+        return reverse('idea_slug', kwargs={'idea_slug': self.slug})
+
+    def __str__(self):
+        return self.title

@@ -1,0 +1,84 @@
+{% extends "artprompt/base.html" %}
+
+{% block content %}
+    <h2>{{ title }}</h2>
+
+    <h3>1. Пример использования класса Q</h3>
+    <p>
+        Выборка арт-промптов, у которых стиль содержит слово
+        <strong>sci</strong> или название содержит слово <strong>лес</strong>.
+    </p>
+
+    <ul>
+        {% for item in q_examples %}
+            <li>{{ item.title }} — {{ item.style }}</li>
+        {% empty %}
+            <li>Записи не найдены</li>
+        {% endfor %}
+    </ul>
+
+    <h3>2. Пример использования класса F</h3>
+    <p>
+        Выборка записей, у которых значение поля id больше значения поля cat_id.
+        Сравнение выполняется на стороне базы данных.
+    </p>
+
+    <ul>
+        {% for item in f_examples %}
+            <li>{{ item.title }} — id: {{ item.id }}, cat_id: {{ item.cat_id }}</li>
+        {% empty %}
+            <li>Записи не найдены</li>
+        {% endfor %}
+    </ul>
+
+    <h3>3. Пример использования Value</h3>
+    <p>
+        К каждой записи добавляется вычисляемое поле source со строковым значением.
+    </p>
+
+    <ul>
+        {% for item in value_examples %}
+            <li>{{ item.title }} — {{ item.style }} — {{ item.source }}</li>
+        {% empty %}
+            <li>Записи не найдены</li>
+        {% endfor %}
+    </ul>
+
+    <h3>4. Вычисляемое поле через Length</h3>
+    <p>
+        Для каждого арт-промпта вычисляется длина названия на стороне базы данных.
+    </p>
+
+    <ul>
+        {% for item in length_examples %}
+            <li>{{ item.title }} — длина названия: {{ item.title_length }}</li>
+        {% empty %}
+            <li>Записи не найдены</li>
+        {% endfor %}
+    </ul>
+
+    <h3>5. Агрегирующие функции</h3>
+    <p>
+        В этом блоке используются Count, Avg, Max и Min.
+    </p>
+
+    <ul>
+        <li>Всего записей: {{ aggregate_examples.total }}</li>
+        <li>Средний id: {{ aggregate_examples.avg_id }}</li>
+        <li>Максимальный id: {{ aggregate_examples.max_id }}</li>
+        <li>Минимальный id: {{ aggregate_examples.min_id }}</li>
+    </ul>
+
+    <h3>6. Группировка записей по категориям</h3>
+    <p>
+        Для каждой категории подсчитывается количество связанных арт-промптов.
+    </p>
+
+    <ul>
+        {% for item in grouped_examples %}
+            <li>{{ item.name }} — количество промптов: {{ item.total_prompts }}</li>
+        {% empty %}
+            <li>Категории с промптами не найдены</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
