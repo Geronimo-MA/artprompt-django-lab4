@@ -5,85 +5,100 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h2>{{ title }}</h2>
-    <p>{{ description }}</p>
+<div class="artprompt-layout">
 
-    <p><strong>{% site_message %}</strong></p>
+    <aside class="artprompt-sidebar">
+        <img src="{% static 'artprompt/images/palette.png' %}" alt="Палитра художника" class="sidebar-image">
 
-    <img src="{% static 'artprompt/images/palette.png' %}" alt="Палитра художника" width="300">
+        <div class="sidebar-block">
+            <h3>Категории</h3>
+            <ul>
+                {% if cat_selected == 0 %}
+                    <li><strong>Все категории</strong></li>
+                {% else %}
+                    <li><a href="{% url 'home' %}">Все категории</a></li>
+                {% endif %}
 
-    <!-- 🔽 КАТЕГОРИИ -->
-    <h3>Категории</h3>
+                {% for cat in db_categories %}
+                    {% if cat.id == cat_selected %}
+                        <li><strong>{{ cat.name }}</strong></li>
+                    {% else %}
+                        <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
 
-    <ul>
-        {% if cat_selected == 0 %}
-            <li><strong>Все категории</strong></li>
+        <div class="sidebar-block">
+            <h3>Теги</h3>
+            <ul>
+                {% for tag in tags %}
+                    {% if tag.id == selected_tag %}
+                        <li><strong>{{ tag.tag }}</strong></li>
+                    {% else %}
+                        <li><a href="{{ tag.get_absolute_url }}">{{ tag.tag }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <h3>Формы</h3>
+            <ul>
+                <li><a href="{% url 'add_plain' %}">Обычная форма</a></li>
+                <li><a href="{% url 'add_model' %}">ModelForm</a></li>
+                <li><a href="{% url 'upload_file' %}">Загрузка файла</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <section class="artprompt-main">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+        <p><strong>{% site_message %}</strong></p>
+
+        <h3>Опубликованные арт-промпты</h3>
+
+        {% if posts %}
+            <div class="prompt-cards">
+                {% for post in posts %}
+                    <article class="prompt-card">
+                        {% if post.photo %}
+                            <img src="{{ post.photo.url }}" alt="{{ post.title }}" class="prompt-image">
+                        {% else %}
+                            <div class="prompt-no-image">Нет изображения</div>
+                        {% endif %}
+
+                        <div class="prompt-info">
+                            <h4>{{ post.title }}</h4>
+
+                            <p><strong>Категория:</strong> {{ post.cat.name|default:"Не указана" }}</p>
+                            <p><strong>Стиль:</strong> {{ post.style|default:"Не указан" }}</p>
+
+                            <p><strong>Теги:</strong>
+                                {% if post.tags.exists %}
+                                    {% for tag in post.tags.all %}
+                                        <a href="{{ tag.get_absolute_url }}">{{ tag.tag }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    нет тегов
+                                {% endif %}
+                            </p>
+
+                            <p>{{ post.content|truncatewords:15 }}</p>
+
+                            <div class="prompt-links">
+                                <a href="{% url 'idea_slug' post.slug %}">Открыть по slug</a>
+                                <a href="{% url 'idea_id' post.id %}">Открыть по id</a>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
         {% else %}
-            <li><a href="{% url 'home' %}">Все категории</a></li>
+            <p>Опубликованных арт-промптов пока нет.</p>
         {% endif %}
+    </section>
 
-        {% for cat in db_categories %}
-            {% if cat.id == cat_selected %}
-                <li><strong>{{ cat.name }}</strong></li>
-            {% else %}
-                <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-
-    <!-- 🔽 ТЕГИ -->
-    <h3>Теги</h3>
-
-    <ul>
-        {% for tag in tags %}
-            {% if tag.id == selected_tag %}
-                <li><strong>{{ tag.tag }}</strong></li>
-            {% else %}
-                <li><a href="{{ tag.get_absolute_url }}">{{ tag.tag }}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-
-    <!-- 🔽 ПОСТЫ -->
-    <h3>Опубликованные арт-промпты</h3>
-
-    {% if posts %}
-        <ul>
-            {% for post in posts %}
-                <li>
-                    <h4>{{ post.title }}</h4>
-
-                    <p><strong>Категория:</strong> {{ post.cat.name }}</p>
-                    <p><strong>Стиль:</strong> {{ post.style }}</p>
-
-                    <p><strong>Теги:</strong>
-                        {% for tag in post.tags.all %}
-                            <a href="{{ tag.get_absolute_url }}">{{ tag.tag }}</a>{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            нет тегов
-                        {% endfor %}
-                    </p>
-
-                    <p>{{ post.content|truncatewords:20 }}</p>
-
-                    <p><a href="{% url 'idea_slug' post.slug %}">Открыть по slug</a></p>
-                    <p><a href="{% url 'idea_id' post.id %}">Открыть по id</a></p>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Опубликованных арт-промптов пока нет.</p>
-    {% endif %}
-
-    <h3>Разделы сайта</h3>
-    <ul>
-        <li><a href="/categories/">Категории</a></li>
-        <li><a href="/ideas/1/">Идея по id</a></li>
-        <li><a href="/ideas/volshebnyj-les/">Идея по slug</a></li>
-        <li><a href="/archive/2023/">Архив 2023</a></li>
-        <li><a href="/archive/2025/">Архив 2025 (404)</a></li>
-        <li><a href="/search/?style=watercolor&type=idea">Поиск (GET)</a></li>
-        <li><a href="/generate/">Сгенерировать идею (POST)</a></li>
-        <li><a href="/go-home/">Redirect</a></li>
-    </ul>
+</div>
 {% endblock %}

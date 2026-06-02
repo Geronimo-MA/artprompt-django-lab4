@@ -4,15 +4,17 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h2>{{ title }}</h2>
+<h2>{{ title }}</h2>
 
-    <p><strong>Заголовок в верхнем регистре:</strong> {{ title|shout }}</p>
+<p><strong>Заголовок в верхнем регистре:</strong> {{ title|shout }}</p>
 
+{% if categories %}
     <ol>
         {% for category in categories %}
-            <li>{{ category }}</li>
-        {% empty %}
-            <li>Категории пока отсутствуют</li>
+            <li>
+                <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+                <span>({{ category.slug }})</span>
+            </li>
         {% endfor %}
     </ol>
 
@@ -23,7 +25,10 @@
     {% endif %}
 
     <p><strong>Всего категорий:</strong> {{ categories|length }}</p>
-    <p><strong>Первая категория:</strong> {{ categories|first }}</p>
-    <p><strong>Последняя категория:</strong> {{ categories|last }}</p>
-    <p><strong>Все категории в одну строку:</strong> {{ categories|join:", " }}</p>
+
+{% else %}
+    <p>Категории пока отсутствуют.</p>
+{% endif %}
+
+<p><a href="{% url 'home' %}">Вернуться на главную</a></p>
 {% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-
+from django.utils.safestring import mark_safe
 from .models import ArtPrompt, Category, TagPrompt, PromptMeta
 
 
@@ -39,18 +39,21 @@ class TagPromptAdmin(admin.ModelAdmin):
     ordering = ('tag',)
 
 
+from django.contrib import admin
+from .models import PromptMeta
+
 @admin.register(PromptMeta)
 class PromptMetaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'difficulty', 'estimated_time', 'materials')
-    list_display_links = ('id', 'difficulty')
-    search_fields = ('difficulty', 'materials')
-    ordering = ('difficulty',)
+    # Список полей для отображения
+    list_display = ('id', 'style', 'estimated_time')
+    ordering = ['style']
 
 
 @admin.register(ArtPrompt)
 class ArtPromptAdmin(admin.ModelAdmin):
     list_display = (
         'title',
+        'post_photo',
         'style',
         'status',
         'cat',
@@ -81,6 +84,7 @@ class ArtPromptAdmin(admin.ModelAdmin):
         'title',
         'slug',
         'content',
+        'photo',
         'style',
         'status',
         'cat',
@@ -107,6 +111,12 @@ class ArtPromptAdmin(admin.ModelAdmin):
     @admin.display(description='Количество тегов')
     def tags_count(self, obj):
         return obj.tags.count()
+
+    @admin.display(description='Изображение')
+    def post_photo(self, obj):
+        if obj.photo:
+            return mark_safe(f"<img src='{obj.photo.url}' width='60'>")
+        return 'Без изображения'
 
     @admin.action(description='Опубликовать выбранные арт-промпты')
     def set_published(self, request, queryset):

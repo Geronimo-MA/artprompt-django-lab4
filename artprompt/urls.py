@@ -2,10 +2,17 @@ from django.urls import path, register_converter
 from . import views
 from .converters import FourDigitYearConverter
 
+
 register_converter(FourDigitYearConverter, "year4")
+
 
 urlpatterns = [
     path('', views.index, name='home'),
+
+    path('add-plain/', views.add_plain, name='add_plain'),
+    path('add-model/', views.add_model, name='add_model'),
+    path('upload-file/', views.upload_file, name='upload_file'),
+
     path('about/', views.about, name='about'),
     path('categories/', views.categories, name='categories'),
 

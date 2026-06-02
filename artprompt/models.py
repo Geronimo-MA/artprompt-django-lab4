@@ -58,21 +58,23 @@ class TagPrompt(models.Model):
 
 
 class PromptMeta(models.Model):
-    difficulty = models.CharField(
-        max_length=50,
+    style = models.CharField(
+        max_length=100,
         blank=True,
-        verbose_name='Сложность'
+        verbose_name='Стиль'
     )
     estimated_time = models.PositiveIntegerField(
         null=True,
         blank=True,
         verbose_name='Примерное время выполнения, мин.'
     )
-    materials = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name='Материалы'
-    )
+
+    class Meta:
+        verbose_name = 'Дополнительная информация'
+        verbose_name_plural = 'Дополнительная информация'
+
+    def __str__(self):
+        return f'{self.style}, {self.estimated_time} мин.'
 
     class Meta:
         verbose_name = 'Дополнительная информация'
@@ -100,6 +102,13 @@ class ArtPrompt(models.Model):
     content = models.TextField(
         blank=True,
         verbose_name='Описание'
+    )
+    photo = models.ImageField(
+        upload_to='photos/%Y/%m/%d/',
+        default=None,
+        blank=True,
+        null=True,
+        verbose_name='Изображение'
     )
     style = models.CharField(
         max_length=100,
@@ -158,3 +167,21 @@ class ArtPrompt(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class UploadedFile(models.Model):
+    file = models.FileField(
+        upload_to='uploads_model/%Y/%m/%d/',
+        verbose_name='Файл'
+    )
+    time_upload = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Время загрузки'
+    )
+
+    def __str__(self):
+        return self.file.name
+
+    class Meta:
+        verbose_name = 'Загруженный файл'
+        verbose_name_plural = 'Загруженные файлы'
